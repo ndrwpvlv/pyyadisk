@@ -2,7 +2,7 @@
 **PyYADisk** is a wrapper over Yandex Disk Rest API V1. 
 The library is in creation process. You can check realized features with our roadmap below. 
 
-# Usage
+## Usage
 ```python
 from pyyadisk import YandexDisk
 
