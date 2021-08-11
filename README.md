@@ -15,4 +15,8 @@ The library is in creation process. You can check realized features with our roa
 - [x] Move of file or directory
 - [x] Copy of file or directory
 - [x] Get download link (private)
+- [x] Share directory or file
+- [x] Get download link (public)
+- [x] Get list of files
+- [x] Get last uploaded files
 

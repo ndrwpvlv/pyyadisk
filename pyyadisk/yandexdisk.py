@@ -1,10 +1,13 @@
 import json
+
 import requests
-from .config import URI, RESOURCE_PATH, FIELDS
+
+from .config import URI, RESOURCE_PATH
+from .helpers import filter_dict_by_key
 
 
 class YandexDisk:
-    def __init__(self, token: str = None, proxy: str = None, ssl_verify=True, max_retries: int = 5):
+    def __init__(self, token: str = None, proxy: str = None, ssl_verify: bool = True, max_retries: int = 5):
         self.token = token
         self.headers = {'Authorization': 'OAuth {}'.format(self.token), 'Accept': 'application/json'}
 
@@ -20,39 +23,76 @@ class YandexDisk:
 
         self.uri = URI
         self.resources = RESOURCE_PATH
-        self.json_fields = FIELDS
 
-    def get_info(self, path_: str = None, fields: str = None, limit: int = None, offset: int = None,
-                 preview_crop: bool = None, preview_size: str = None, sort: str = 'name'):
-        if not path_:
-            return self._get(self.uri)
-        params = {'path': path_, 'fields': fields or self.json_fields, 'limit': limit, 'offset': offset,
-                  'preview_crop': preview_crop, 'preview_size': preview_size, 'sort': sort}
-        return self._get(self.resources, params)
+        self.params = {'path': None, 'fields': None, 'sort': None, 'limit': None, 'offset': None}
 
-    def listdir(self, path_: str = '/', fields: str = None, limit: int = None, offset: int = None, sort='name'):
-        params = {'path': path_, 'fields': fields or self.json_fields, 'limit': limit, 'offset': offset, 'sort': sort}
-        return self._get(self.resources, params)
+    def path(self, path: str):
+        self.params['path'] = path
+        return self
 
-    def mkdir(self, path_: str, fields: str = 'href'):
-        params = {'path': path_, 'fields': fields}
-        return self._put(self.resources, params)
+    def fields(self, fields: str):
+        self.params['fields'] = fields
+        return self
 
-    def copy(self, source: str, destination: str, fields: str = None, force_async: bool = None, overwrite: bool = None):
-        params = {'from': source, 'path': destination, 'fields': fields, 'force_async': force_async, 'overwrite': overwrite, }
-        return self._post(f'{self.resources}/copy', params)
+    def sort(self, sort):
+        self.params['sort'] = sort
+        return self
 
-    def move(self, source: str, destination: str, fields: str = None, force_async: bool = None, overwrite: bool = None):
-        params = {'from': source, 'path': destination, 'fields': fields, 'force_async': force_async, 'overwrite': overwrite, }
-        return self._post(f'{self.resources}/move', params)
+    def add_params(self, key, value):
+        self.params[key] = value
+        return self
 
-    def remove(self, path_: str, fields: str = None, force_async: bool = None, md5_hash: str = None, permanently: bool = False):
-        params = {'path': path_, 'fields': fields, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, }
-        return self._delete(self.resources, params)
+    def get(self, limit: int = None, offset: int = None):
+        params = {**self.params, 'limit': limit, 'offset': offset, }
+        return self._get(self.resources, filter_dict_by_key(params))
 
-    def get_download_link(self, path_: str, fields: str = None):
-        params = {'path': path_, 'fields': fields, }
-        return self._get(f'{self.resources}/download', params)
+    def create(self):
+        return self._put(self.resources, filter_dict_by_key(self.params))
+
+    def delete(self, force_async: bool = None, md5_hash: str = None, permanently: bool = False):
+        params = {**self.params, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, }
+        return self._delete(self.resources, filter_dict_by_key(params))
+
+    def copy(self, destination: str, force_async: bool = None, overwrite: bool = None):
+        params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
+                  'force_async': force_async, 'overwrite': overwrite, }
+        return self._post(f'{self.resources}/copy', filter_dict_by_key(params))
+
+    def move(self, destination: str, force_async: bool = None, overwrite: bool = None):
+        params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
+                  'force_async': force_async, 'overwrite': overwrite, }
+        return self._post(f'{self.resources}/move', filter_dict_by_key(params))
+
+    def last_uploaded(self, limit: int = None, media_type: str = None, preview_crop: bool = None, preview_size: str = None):
+        params = {**self.params, 'limit': limit, 'media_type': media_type, 'preview_crop': preview_crop, 'preview_size': preview_size, }
+        return self._get(self.resources, filter_dict_by_key(params))
+
+    def list_files(self, limit: int = None, offset: int = None, media_type: str = None, preview_crop: bool = None, preview_size: str = None):
+        params = {**self.params, 'limit': limit, 'offset': offset, 'media_type': media_type, 'preview_crop': preview_crop, 'preview_size': preview_size, }
+        return self._get(self.resources, filter_dict_by_key(params))
+
+    def link(self):
+        try:
+            return self._get(f'{self.resources}/download', {'path': self.params.get('path')})[1]['href']
+        except Exception as e:
+            print(e)
+            return None
+
+    def share(self):
+        try:
+            response = self._put(f'{self.resources}/publish', {'path': self.params.get('path')})
+            if response[0] == 200:
+                return self.get()[1]["public_url"]
+        except Exception as e:
+            print(e)
+            return None
+
+    def unshare(self):
+        try:
+            return self._put(f'{self.resources}/unpublish', {'path': self.params.get('path')})[1]['href']
+        except Exception as e:
+            print(e)
+            return None
 
     def _get(self, uri: str, params: dict = None):
         return self._request('get', uri=uri, params=params)
