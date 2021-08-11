@@ -19,6 +19,8 @@ print(disk.path('path').share())  # Share path and get public link
 disk.path('path').unshare()  # Unshare path
 print(disk.last_uploaded())  # Get last uploaded files info
 print(disk.list_files())  # Get files list info
+disk.path('path').upload('/home/file.pdf')  # Upload file
+disk.path('path').upload_by_url('file.pdf', 'https://example.com/file.pdf')  # Upload file by url
 ```
 
 ## Roadmap
@@ -38,4 +40,6 @@ print(disk.list_files())  # Get files list info
 - [x] Get download link (public)
 - [x] Get list of files
 - [x] Get last uploaded files
+- [x] Upload file
+- [x] Upload file by url
 
