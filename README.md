@@ -1,5 +1,5 @@
-# PyYADisk
-**PyYADisk** is a wrapper over Yandex Disk Rest API V1. 
+# PyYaDisk
+**PyYaDisk** is a wrapper over Yandex Disk Rest API V1. 
 The library is in creation process. You can check realized features with our roadmap below. 
 
 ## Usage
@@ -43,3 +43,5 @@ disk.path('path').upload_by_url('file.pdf', 'https://example.com/file.pdf')  # U
 - [x] Upload file
 - [x] Upload file by url
 
+`/v1/disk/resources/save-to-disk`
+- [ ] Save public file to disk by public key or url
