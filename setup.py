@@ -7,14 +7,14 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='pyyadisk',
-    version='0.1.0',
+    version='0.1.1',
     packages=['pyyadisk', ],
     url='https://github.com/ndrwpvlv/pyyadisk',
     license='MIT',
     author='Andrei S. Pavlov',
     author_email='andy_pavlov@outlook.com',
     description='PyYaDisk is a small wrapper over Yandex Disk Rest API V1',
-    download_url='https://github.com/ndrwpvlv/pyyadisk/archive/refs/tags/0.1.0.tar.gz',
+    download_url='https://github.com/ndrwpvlv/pyyadisk/archive/refs/tags/0.1.1.tar.gz',
     long_description=long_description,
     long_description_content_type='text/markdown',
     keywords=['Yandex', 'Yandex Disk', 'Yandex Disk REST API'],
