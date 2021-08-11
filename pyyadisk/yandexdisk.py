@@ -84,42 +84,58 @@ class YandexDisk:
     def link(self):
         try:
             return self._get(f'{self.resources}/download', {'path': self.params.get('path')})[1]['href']
-        except Exception as e:
-            print(e)
-            return None
+        except TypeError:
+            return 404, None
 
     def share(self):
-        try:
-            response = self._put(f'{self.resources}/publish', {'path': self.params.get('path')})
-            if response[0] == 200:
-                return self.get()[1]["public_url"]
-        except Exception as e:
-            print(e)
-            return None
+        response = self._put(f'{self.resources}/publish', {'path': self.params.get('path')})
+        if response[0] == 200:
+            return self.get()[1]["public_url"]
+        return 404, None
 
     def unshare(self):
         try:
             return self._put(f'{self.resources}/unpublish', {'path': self.params.get('path')})[1]['href']
-        except Exception as e:
-            print(e)
-            return None
+        except TypeError:
+            return 404, None
+
+    def public_url(self):
+        try:
+            return self._get(self.resources, filter_dict_by_key(self.params))[1]['public_url']
+        except KeyError:
+            return 404, None
+
+    def public_key(self):
+        try:
+            return self._get(self.resources, filter_dict_by_key(self.params))[1]['public_key']
+        except KeyError:
+            return 404, None
 
     def upload(self, filepath: str, overwrite: bool = False):
         filename = Path(filepath).name
         path = f'{self.params["path"]}/{filename}'
-        link = self._get_upload_link(path=path, overwrite=overwrite)[1]['href']
-        files = {'file': open(filepath, 'rb')}
-        params = {**self.params, 'path': path}
-        return self._put(link, files=files, params=params)
+        try:
+            link = self._get_upload_link(path=path, overwrite=overwrite)
+            if link:
+                files = {'file': open(filepath, 'rb')}
+                params = {**self.params, 'path': path}
+                return self._put(link, files=files, params=params)
+            else:
+                return 404, None
+        except FileNotFoundError as e:
+            return 400, str(e)
 
-    def upload_by_url(self, filename: str, url: str, overwrite: bool = False, disable_redirects: bool = None):
+    def upload_by_url(self, filename: str, url: str, disable_redirects: bool = None):
         params = {**self.params, 'path': f'{self.params["path"]}/{filename}', 'url': url,
                   'disable_redirects': disable_redirects}
         return self._post(f'{self.resources}/upload', filter_dict_by_key(params))
 
     def _get_upload_link(self, path: str, overwrite: bool = False):
         params = {**self.params, 'path': path, 'overwrite': overwrite, }
-        return self._get(f'{self.resources}/upload', filter_dict_by_key(params))
+        try:
+            return self._get(f'{self.resources}/upload', filter_dict_by_key(params))[1]['href']
+        except (KeyError, TypeError):
+            return None
 
     def _get(self, uri: str, params: dict = None):
         return self._request('get', uri=uri, params=params)
@@ -145,7 +161,7 @@ class YandexDisk:
                     pass
                 return response.status_code, json_data
             else:
-                print('Code {}'.format(response.status_code))
+                pass
             return response.status_code, json_data
-        except requests.exceptions.RequestException as e:  # This is the correct syntax
+        except requests.exceptions.RequestException as e:
             raise SystemExit(e)
