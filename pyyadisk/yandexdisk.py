@@ -46,8 +46,9 @@ class YandexDisk:
         params = {**self.params, 'limit': limit, 'offset': offset, }
         return self._get(self.resources, filter_dict_by_key(params))
 
-    def create(self):
-        return self._put(self.resources, filter_dict_by_key(self.params))
+    def create(self, subdir: str = None):
+        params = {**self.params, 'path': f'{self.params["path"]}/{subdir}' if subdir else self.params["path"], }
+        return self._put(self.resources, filter_dict_by_key(params))
 
     def delete(self, force_async: bool = None, md5_hash: str = None, permanently: bool = False):
         params = {**self.params, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, }
@@ -63,12 +64,16 @@ class YandexDisk:
                   'force_async': force_async, 'overwrite': overwrite, }
         return self._post(f'{self.resources}/move', filter_dict_by_key(params))
 
-    def last_uploaded(self, limit: int = None, media_type: str = None, preview_crop: bool = None, preview_size: str = None):
-        params = {**self.params, 'limit': limit, 'media_type': media_type, 'preview_crop': preview_crop, 'preview_size': preview_size, }
+    def last_uploaded(self, limit: int = None, media_type: str = None, preview_crop: bool = None,
+                      preview_size: str = None):
+        params = {'limit': limit, 'media_type': media_type, 'preview_crop': preview_crop,
+                  'preview_size': preview_size, }
         return self._get(self.resources, filter_dict_by_key(params))
 
-    def list_files(self, limit: int = None, offset: int = None, media_type: str = None, preview_crop: bool = None, preview_size: str = None):
-        params = {**self.params, 'limit': limit, 'offset': offset, 'media_type': media_type, 'preview_crop': preview_crop, 'preview_size': preview_size, }
+    def list_files(self, limit: int = None, offset: int = None, media_type: str = None, preview_crop: bool = None,
+                   preview_size: str = None):
+        params = {'limit': limit, 'offset': offset, 'media_type': media_type, 'preview_crop': preview_crop,
+                  'preview_size': preview_size, }
         return self._get(self.resources, filter_dict_by_key(params))
 
     def link(self):
