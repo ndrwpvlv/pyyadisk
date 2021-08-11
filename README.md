@@ -37,7 +37,7 @@ disk.path('yandex/disk/path').upload_by_url('file.pdf', 'https://example.com/fil
 - [x] Copy of file or directory
 - [x] Get download link (private)
 - [x] Share directory or file and get public link
-- [ ] Get download link (public)
+- [+] Get download link (public)
 - [x] Get list of files
 - [x] Get last uploaded files
 - [x] Upload file
