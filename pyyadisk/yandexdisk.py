@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import requests
 
@@ -26,11 +27,11 @@ class YandexDisk:
 
         self.params = {'path': None, 'fields': None, 'sort': None, 'limit': None, 'offset': None}
 
-    def path(self, path: str):
+    def path(self, path: str = None):
         self.params['path'] = path
         return self
 
-    def fields(self, fields: str):
+    def fields(self, fields: str = None):
         self.params['fields'] = fields
         return self
 
@@ -38,8 +39,12 @@ class YandexDisk:
         self.params['sort'] = sort
         return self
 
-    def add_params(self, key, value):
+    def add_param(self, key, value):
         self.params[key] = value
+        return self
+
+    def add_params(self, params: dict):
+        self.params.update(params)
         return self
 
     def get(self, limit: int = None, offset: int = None):
@@ -99,31 +104,48 @@ class YandexDisk:
             print(e)
             return None
 
+    def upload(self, filepath: str, overwrite: bool = False):
+        filename = Path(filepath).name
+        path = f'{self.params["path"]}/{filename}'
+        link = self._get_upload_link(path=path, overwrite=overwrite)[1]['href']
+        files = {'file': open(filepath, 'rb')}
+        params = {**self.params, 'path': path}
+        return self._put(link, files=files, params=params)
+
+    def upload_by_url(self, filename: str, url: str, overwrite: bool = False, disable_redirects: bool = None):
+        params = {**self.params, 'path': f'{self.params["path"]}/{filename}', 'url': url,
+                  'disable_redirects': disable_redirects}
+        return self._post(f'{self.resources}/upload', filter_dict_by_key(params))
+
+    def _get_upload_link(self, path: str, overwrite: bool = False):
+        params = {**self.params, 'path': path, 'overwrite': overwrite, }
+        return self._get(f'{self.resources}/upload', filter_dict_by_key(params))
+
     def _get(self, uri: str, params: dict = None):
         return self._request('get', uri=uri, params=params)
 
-    def _post(self, uri: str, params: dict = None):
-        return self._request('post', uri=uri, params=params)
+    def _post(self, uri: str, params: dict = None, data: dict = None):
+        return self._request('post', uri=uri, params=params, data=data)
 
-    def _put(self, uri: str, params: dict = None):
-        return self._request('put', uri=uri, params=params)
+    def _put(self, uri: str, params: dict = None, files: dict = None):
+        return self._request('put', uri=uri, params=params, files=files)
 
     def _delete(self, uri: str, params: dict = None):
         return self._request('delete', uri=uri, params=params)
 
-    def _request(self, method: str, uri: str, params: dict = None):
-        data = None
+    def _request(self, method: str, uri: str, params: dict = None, files: dict = None, data: dict = None):
+        json_data = None
         try:
             response = getattr(self.session, method)(uri, headers=self.headers, verify=self.ssl_verify,
-                                                     proxies=self.proxies, params=params)
+                                                     proxies=self.proxies, params=params, files=files, data=data)
             if 200 <= response.status_code <= 299:
                 try:
-                    data = response.json()
+                    json_data = response.json()
                 except json.decoder.JSONDecodeError:
                     pass
-                return response.status_code, data
+                return response.status_code, json_data
             else:
                 print('Code {}'.format(response.status_code))
-            return response.status_code, data
+            return response.status_code, json_data
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             raise SystemExit(e)
