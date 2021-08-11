@@ -125,7 +125,7 @@ class YandexDisk:
         except FileNotFoundError as e:
             return 400, str(e)
 
-    def upload_by_url(self, filename: str, url: str, disable_redirects: bool = None):
+    def upload_by_url(self, filename: str, url: str, disable_redirects: bool = False):
         params = {**self.params, 'path': f'{self.params["path"]}/{filename}', 'url': url,
                   'disable_redirects': disable_redirects}
         return self._post(f'{self.resources}/upload', filter_dict_by_key(params))
