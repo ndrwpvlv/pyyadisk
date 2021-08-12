@@ -3,7 +3,7 @@ from pathlib import Path
 
 import requests
 
-from .config import URI, RESOURCE_PATH
+from .config import URI, RESOURCE_PATH, TRASH_PATH
 from .helpers import filter_dict_by_key
 
 
@@ -28,8 +28,18 @@ class YandexDisk:
         self.params = {'path': None, 'fields': None, 'sort': None, 'limit': None, 'offset': None}
 
     def path(self, path: str = None):
+        self.resources = RESOURCE_PATH
         self.params['path'] = path
         return self
+
+    def trash(self, path: str = None):
+        self.resources = TRASH_PATH
+        self.params['path'] = path
+        return self
+
+    def restore(self, name: str = None, force_async: bool = None, overwrite: bool = False):
+        params = {**self.params, 'name': name, 'force_async': force_async, 'overwrite': overwrite, }
+        return self._put(f'{self.resources}/restore', params=filter_dict_by_key(params))
 
     def fields(self, fields: str = None):
         self.params['fields'] = fields
@@ -49,37 +59,37 @@ class YandexDisk:
 
     def get(self, limit: int = None, offset: int = None):
         params = {**self.params, 'limit': limit, 'offset': offset, }
-        return self._get(self.resources, filter_dict_by_key(params))
+        return self._get(self.resources, params=filter_dict_by_key(params))
 
     def create(self, subdir: str = None):
         params = {**self.params, 'path': f'{self.params["path"]}/{subdir}' if subdir else self.params["path"], }
-        return self._put(self.resources, filter_dict_by_key(params))
+        return self._put(self.resources, params=filter_dict_by_key(params))
 
     def delete(self, force_async: bool = None, md5_hash: str = None, permanently: bool = False):
         params = {**self.params, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, }
-        return self._delete(self.resources, filter_dict_by_key(params))
+        return self._delete(self.resources, params=filter_dict_by_key(params))
 
     def copy(self, destination: str, force_async: bool = None, overwrite: bool = None):
         params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
                   'force_async': force_async, 'overwrite': overwrite, }
-        return self._post(f'{self.resources}/copy', filter_dict_by_key(params))
+        return self._post(f'{self.resources}/copy', params=filter_dict_by_key(params))
 
     def move(self, destination: str, force_async: bool = None, overwrite: bool = None):
         params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
                   'force_async': force_async, 'overwrite': overwrite, }
-        return self._post(f'{self.resources}/move', filter_dict_by_key(params))
+        return self._post(f'{self.resources}/move', params=filter_dict_by_key(params))
 
     def last_uploaded(self, limit: int = None, media_type: str = None, preview_crop: bool = None,
                       preview_size: str = None):
         params = {'limit': limit, 'media_type': media_type, 'preview_crop': preview_crop,
                   'preview_size': preview_size, }
-        return self._get(self.resources, filter_dict_by_key(params))
+        return self._get(self.resources, params=filter_dict_by_key(params))
 
     def list_files(self, limit: int = None, offset: int = None, media_type: str = None, preview_crop: bool = None,
                    preview_size: str = None):
         params = {'limit': limit, 'offset': offset, 'media_type': media_type, 'preview_crop': preview_crop,
                   'preview_size': preview_size, }
-        return self._get(self.resources, filter_dict_by_key(params))
+        return self._get(self.resources, params=filter_dict_by_key(params))
 
     def link(self):
         try:
@@ -128,12 +138,12 @@ class YandexDisk:
     def upload_by_url(self, filename: str, url: str, disable_redirects: bool = False):
         params = {**self.params, 'path': f'{self.params["path"]}/{filename}', 'url': url,
                   'disable_redirects': disable_redirects}
-        return self._post(f'{self.resources}/upload', filter_dict_by_key(params))
+        return self._post(f'{self.resources}/upload', params=filter_dict_by_key(params))
 
     def _get_upload_link(self, path: str, overwrite: bool = False):
         params = {**self.params, 'path': path, 'overwrite': overwrite, }
         try:
-            return self._get(f'{self.resources}/upload', filter_dict_by_key(params))[1]['href']
+            return self._get(f'{self.resources}/upload', params=filter_dict_by_key(params))[1]['href']
         except (KeyError, TypeError):
             return None
 
