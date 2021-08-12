@@ -3,7 +3,7 @@ from pathlib import Path
 
 import requests
 
-from .config import URI, RESOURCE_PATH, TRASH_PATH
+from .config import URI, RESOURCE_PATH, TRASH_PATH, OPERATIONS_PATH
 from .helpers import filter_dict_by_key
 
 
@@ -27,11 +27,6 @@ class YandexDisk:
 
         self.params = {'path': None, 'fields': None, 'sort': None, 'limit': None, 'offset': None}
 
-    def path(self, path: str = None):
-        self.resources = RESOURCE_PATH
-        self.params['path'] = path
-        return self
-
     def trash(self, path: str = None):
         self.resources = TRASH_PATH
         self.params['path'] = path
@@ -40,6 +35,15 @@ class YandexDisk:
     def restore(self, name: str = None, force_async: bool = None, overwrite: bool = False):
         params = {**self.params, 'name': name, 'force_async': force_async, 'overwrite': overwrite, }
         return self._put(f'{self.resources}/restore', params=filter_dict_by_key(params))
+
+    def operations(self, operation_id: str):
+        params = {'operation_id': operation_id}
+        return self._get(f'{OPERATIONS_PATH}/{operation_id}', params=params)
+
+    def path(self, path: str = None):
+        self.resources = RESOURCE_PATH
+        self.params['path'] = path
+        return self
 
     def fields(self, fields: str = None):
         self.params['fields'] = fields
