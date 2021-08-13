@@ -303,6 +303,12 @@ class YandexDisk:
         """
         Copy file or directory to new destination
 
+        Typical usage example:
+            disk = YandexDisk()
+            directory = disk.path('path/to/the/old_directory')
+            directory.copy('path/to/the/new_directory_1')
+            directory.copy('path/to/the/new_directory_2')  # Nice way to make multiple copies
+
         Args:
             destination: Destination path
             force_async: Execute asynchronously (True or False).
@@ -317,6 +323,23 @@ class YandexDisk:
         return self._post(f'{self.resources}/copy', params=filter_dict_by_key(params))
 
     def move(self, destination: str, force_async: bool = None, overwrite: bool = None):
+        """
+        Move file or directory to new destination
+
+        Typical usage example:
+            disk = YandexDisk()
+            directory = disk.path('path/to/the/old_directory')
+            directory.move('path/to/the/new_directory_1')
+
+        Args:
+            destination: Destination path
+            force_async: Execute asynchronously (True or False).
+            overwrite: Flag of overwrite enable
+
+        Returns:
+            Tuple with Response code and dictionary from JSON:
+            (Response code, JSON Response dict or None for error)
+        """
         params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
                   'force_async': force_async, 'overwrite': overwrite, }
         return self._post(f'{self.resources}/move', params=filter_dict_by_key(params))
