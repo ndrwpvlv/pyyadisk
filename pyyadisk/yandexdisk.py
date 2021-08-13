@@ -233,9 +233,9 @@ class YandexDisk:
         self.params.update(params)
         return self
 
-    def get(self, limit: int = None, offset: int = None):
+    def get(self, limit: int = None, offset: int = None, **other_params):
         """
-        Make get metadata of file or directory from Disk or Trash mode. For objects sorting use YandexDisk.sort() method
+        Get metadata of file or directory from Disk or Trash mode. For objects sorting use YandexDisk.sort() method
 
         Typical usage example:
             disk = YandexDisk()
@@ -249,7 +249,7 @@ class YandexDisk:
             Tuple with Response code and dictionary from JSON:
             (Response code, JSON Response dict or None for error)
         """
-        params = {**self.params, 'limit': limit, 'offset': offset, }
+        params = {**self.params, 'limit': limit, 'offset': offset, **other_params, }
         return self._get(self.resources, params=filter_dict_by_key(params))
 
     def create(self, subdir: str = None):
@@ -299,15 +299,15 @@ class YandexDisk:
         params = {**self.params, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, }
         return self._delete(self.resources, params=filter_dict_by_key(params))
 
-    def copy(self, destination: str, force_async: bool = None, overwrite: bool = None):
+    def copy_to(self, destination: str, force_async: bool = None, overwrite: bool = None):
         """
         Copy file or directory to new destination
 
         Typical usage example:
             disk = YandexDisk()
             directory = disk.path('path/to/the/old_directory')
-            directory.copy('path/to/the/new_directory_1')
-            directory.copy('path/to/the/new_directory_2')  # Nice way to make multiple copies
+            directory.copy_to('path/to/the/new_directory_1')
+            directory.copy_to('path/to/the/new_directory_2')  # Nice way to make multiple copies
 
         Args:
             destination: Destination path
@@ -322,14 +322,14 @@ class YandexDisk:
                   'force_async': force_async, 'overwrite': overwrite, }
         return self._post(f'{self.resources}/copy', params=filter_dict_by_key(params))
 
-    def move(self, destination: str, force_async: bool = None, overwrite: bool = None):
+    def move_to(self, destination: str, force_async: bool = None, overwrite: bool = None):
         """
         Move file or directory to new destination
 
         Typical usage example:
             disk = YandexDisk()
             directory = disk.path('path/to/the/old_directory')
-            directory.move('path/to/the/new_directory_1')
+            directory.move_to('path/to/the/new_directory_1')
 
         Args:
             destination: Destination path
