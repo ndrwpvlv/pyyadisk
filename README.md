@@ -138,7 +138,8 @@ disk.path('path/to/directory').delete()  # Delete directory or file
 `public_key()`: Get public key of file or directory
 
 Example:
-```
+
+```python
 disk = YandexDisk(token=token)
 
 link = disk.path('path/to/directory').share()
