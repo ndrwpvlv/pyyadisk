@@ -15,9 +15,9 @@ class YandexDisk:
     Resources:
     - Get metadata of file or directory
     - Create directory
-    - Delete of file or directory
-    - Move of file or directory
-    - Copy of file or directory
+    - Delete file or directory
+    - Move file or directory
+    - Copy file or directory
     - Get download link (private)
     - Share directory or file and get public link
     - Get download link (public)
@@ -32,7 +32,7 @@ class YandexDisk:
     Async operations status
 
     Attributes:
-        token: Oauth token (get in at https://yandex.ru/dev/disk/poligon/)
+        token: Oauth token (get it at https://yandex.ru/dev/disk/poligon/)
         headers: Dictionary with headers ('Authorization', 'Accept')
         proxies: (optional) Dictionary with proxy addresses for http and https
         session: Object of requests.Session()
@@ -44,10 +44,10 @@ class YandexDisk:
 
     def __init__(self, token: str = None, proxy: str = None, ssl_verify: bool = True, max_retries: int = 5):
         """
-        Inits of YandexDisk REST API V1 wrapper class
+        Initialization of YandexDisk REST API V1 wrapper class
 
         Args:
-            token: Oauth token (get in at https://yandex.ru/dev/disk/poligon/)
+            token: Oauth token (get it at https://yandex.ru/dev/disk/poligon/)
             proxy: (optional) Proxy address for http and https
             ssl_verify: (optional) Flag of connection ssl verification check
             max_retries: (optional) Number of maximum connection retries
@@ -79,7 +79,7 @@ class YandexDisk:
             trash_ = disk.trash('path/to/the/file')
 
         Args:
-            path: The full path to the resource in the Trash (file or directory). For the root of trash use path = '/' or None
+            path: The full path to the resource in the Trash (file or directory). Get the root with path = '/' or None
 
         Returns:
             Self YandexDisk object
@@ -235,14 +235,14 @@ class YandexDisk:
 
     def get(self, limit: int = None, offset: int = None):
         """
-        Make get metadata of file or directory from Disk or Trash mode
+        Make get metadata of file or directory from Disk or Trash mode. For objects sorting use YandexDisk.sort() method
 
         Typical usage example:
             disk = YandexDisk()
             info = disk.path('path/to/the/file').get()
 
         Args:
-            limit: The number of embedded resources to return
+            limit: The number of items to return
             offset: Offset from the beginning
 
         Returns:
@@ -258,8 +258,8 @@ class YandexDisk:
 
         Typical usage example:
             disk = YandexDisk()
-            directory = disk.path('path/to/the/directory').create()  # create the directory by the path
-            directory = disk.path('path/to/the/directory').create('subdirectory')  # create the subdirectory in the directory
+            dir_ = disk.path('path/to/the/directory').create()  # create the directory by the path
+            dir_ = disk.path('path/to/the/directory').create('subdirectory')  # create the subdirectory in the directory
 
         or
 
@@ -346,47 +346,115 @@ class YandexDisk:
 
     def last_uploaded(self, limit: int = None, media_type: str = None, preview_crop: bool = None,
                       preview_size: str = None):
+        """
+        Get list of last uploaded files
+
+        Args:
+            limit: The number of items to return
+            media_type: Filter by media type
+            preview_crop: Enable crop preview
+            preview_size: Size of preview
+
+        Returns:
+            Tuple with Response code and dictionary from JSON:
+            (Response code, JSON Response dict or None for error)
+        """
         params = {'limit': limit, 'media_type': media_type, 'preview_crop': preview_crop,
                   'preview_size': preview_size, }
         return self._get(self.resources, params=filter_dict_by_key(params))
 
     def list_files(self, limit: int = None, offset: int = None, media_type: str = None, preview_crop: bool = None,
                    preview_size: str = None):
+        """
+        Get list of files. For objects sorting use YandexDisk.sort() method
+
+        Args:
+            limit: The number of items to return
+            offset: Offset from the beginning
+            media_type: Filter by media type
+            preview_crop: Enable crop preview
+            preview_size: Size of preview
+
+        Returns:
+            Tuple with Response code and dictionary from JSON:
+            (Response code, JSON Response dict or None for error)
+        """
         params = {'limit': limit, 'offset': offset, 'media_type': media_type, 'preview_crop': preview_crop,
                   'preview_size': preview_size, }
         return self._get(self.resources, params=filter_dict_by_key(params))
 
     def link(self):
+        """
+        Get private link of file or directory which set by YandexDisk.path('path/to/the/file')
+
+        Returns:
+            Tuple with Response code and dictionary from JSON:
+            (Response code, JSON Response dict or None for error)
+        """
         try:
-            return self._get(f'{self.resources}/download', {'path': self.params.get('path')})[1]['href']
+            return 200, self._get(f'{self.resources}/download', {'path': self.params.get('path')})[1]['href']
         except TypeError:
             return 404, None
 
     def share(self):
+        """
+        Share file or directory which set by YandexDisk.path('path/to/the/file')
+
+        Returns:
+            tuple(response code, public url) or tuple(404, None) for any errors cases
+        """
         response = self._put(f'{self.resources}/publish', {'path': self.params.get('path')})
         if response[0] == 200:
-            return self.get()[1]["public_url"]
+            return response[0], self.get()[1]["public_url"]
         return 404, None
 
     def unshare(self):
+        """
+        Unshare public file of directory which set by YandexDisk.path('path/to/the/file')
+
+        Returns:
+            tuple(404, None) for any errors cases
+        """
         try:
             return self._put(f'{self.resources}/unpublish', {'path': self.params.get('path')})[1]['href']
         except TypeError:
             return 404, None
 
     def public_url(self):
+        """
+        Get public url of public file of directory which set by YandexDisk.path('path/to/the/file')
+
+        Returns:
+            tuple(response code, public url)  or tuple(404, None) for any errors cases
+        """
         try:
             return self._get(self.resources, filter_dict_by_key(self.params))[1]['public_url']
         except KeyError:
             return 404, None
 
     def public_key(self):
+        """
+        Get public key of public file of directory which set by YandexDisk.path('path/to/the/file')
+
+        Returns:
+            tuple(response code, public key) or tuple(404, None) for any errors cases
+        """
         try:
             return self._get(self.resources, filter_dict_by_key(self.params))[1]['public_key']
         except KeyError:
             return 404, None
 
     def upload(self, filepath: str, overwrite: bool = False):
+        """
+        File upload method
+
+        Args:
+            filepath: Path to the file
+            overwrite: Enable overwriting for uploaded item
+
+        Returns:
+            tuple(response code, response) or tuple(404, None) for any errors cases
+        """
         filename = Path(filepath).name
         path = f'{self.params["path"]}/{filename}'
         try:
@@ -398,14 +466,36 @@ class YandexDisk:
             else:
                 return 404, None
         except FileNotFoundError as e:
-            return 400, str(e)
+            return 404, str(e)
 
     def upload_by_url(self, filename: str, url: str, disable_redirects: bool = False):
+        """
+        Upload file from the web by url to the path which set by YandexDisk.path('path/to/the/file')
+
+        Args:
+            filename: name of the file
+            url: url of the file
+            disable_redirects: Disable redirects
+
+        Returns:
+            Tuple with Response code and dictionary from JSON:
+            (Response code, JSON Response dict or None for error)
+        """
         params = {**self.params, 'path': f'{self.params["path"]}/{filename}', 'url': url,
                   'disable_redirects': disable_redirects}
         return self._post(f'{self.resources}/upload', params=filter_dict_by_key(params))
 
     def _get_upload_link(self, path: str, overwrite: bool = False):
+        """
+        Get upload link for YandexDisk.upload() method
+
+        Args:
+            path: Full path to the file or directory on Yandex Disk
+            overwrite: Enable overwriting for uploaded item
+
+        Returns:
+
+        """
         params = {**self.params, 'path': path, 'overwrite': overwrite, }
         try:
             return self._get(f'{self.resources}/upload', params=filter_dict_by_key(params))[1]['href']
