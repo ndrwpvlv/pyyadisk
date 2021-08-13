@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='pyyadisk',
-    version='0.1.2',
+    version='0.1.3',
     packages=['pyyadisk', ],
     url='https://github.com/ndrwpvlv/pyyadisk',
     license='MIT',
