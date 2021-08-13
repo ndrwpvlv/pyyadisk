@@ -149,24 +149,24 @@ disk.path('path/to/directory').unshare()
 ```
 
 ## Roadmap
-- [x] OAuth authorization by token
+* OAuth authorization by token
 
 `/v1/disk`
-- [x] Get disk metadata
+* Get disk metadata
 
 `/v1/disk/resources`
-- [x] Get metadata of file or directory
-- [x] Create directory
-- [x] Delete file or directory
-- [x] Move file or directory
-- [x] Copy file or directory
-- [x] Get download link (private)
-- [x] Share directory or file and get public link
-- [x] Get download link (public)
-- [x] Get list of files
-- [x] Get last uploaded files
-- [x] Upload file
-- [x] Upload file by url
+* Get metadata of file or directory
+* Create directory
+* Delete file or directory
+* Move file or directory
+* Copy file or directory
+* Get download link (private)
+* Share directory or file and get public link
+* Get download link (public)
+* Get list of files
+* Get last uploaded files
+* Upload file
+* Upload file by url
 
 `/v1/disk/resources/save-to-disk`
-- [ ] Save public file to disk by public key or url
+- (In process) Save public file to disk by public key or url
