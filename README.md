@@ -32,9 +32,9 @@ disk.path('yandex/disk/path').upload_by_url('file.pdf', 'https://example.com/fil
 `/v1/disk/resources`
 - [x] Get metadata of file or directory
 - [x] Create directory
-- [x] Delete of file or directory
-- [x] Move of file or directory
-- [x] Copy of file or directory
+- [x] Delete file or directory
+- [x] Move file or directory
+- [x] Copy file or directory
 - [x] Get download link (private)
 - [x] Share directory or file and get public link
 - [x] Get download link (public)
