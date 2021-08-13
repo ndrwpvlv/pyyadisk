@@ -1,5 +1,5 @@
 URI = 'https://cloud-api.yandex.net/v1/disk'
-RESOURCE_PATH = f'{URI}/resources'
+RESOURCES_PATH = f'{URI}/resources'
 TRASH_PATH = f'{URI}/trash/resources'
 OPERATIONS_PATH = f'{URI}/operations'
 FIELDS_NAME = ['name', 'type', 'path', 'size', 'created', 'modified', 'revision', 'file']

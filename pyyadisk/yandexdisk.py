@@ -3,7 +3,7 @@ from pathlib import Path
 
 import requests
 
-from .config import URI, RESOURCE_PATH, TRASH_PATH, OPERATIONS_PATH
+from .config import URI, RESOURCES_PATH, TRASH_PATH, OPERATIONS_PATH
 from .helpers import filter_dict_by_key
 
 
@@ -66,7 +66,7 @@ class YandexDisk:
         self.ssl_verify = ssl_verify
 
         self.uri = URI
-        self.resources = RESOURCE_PATH
+        self.resources = RESOURCES_PATH
 
         self.params = {'path': None, 'fields': None, 'sort': None, 'limit': None, 'offset': None}
 
@@ -153,7 +153,7 @@ class YandexDisk:
         Returns:
             Self YandexDisk object
         """
-        self.resources = RESOURCE_PATH
+        self.resources = RESOURCES_PATH
         self.params['path'] = path
         return self
 
