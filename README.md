@@ -7,6 +7,10 @@ Install and update using [pip](https://pip.pypa.io/en/stable/getting-started/):
 ```
 pip install -U pyyadisk
 ```
+For direct installation from Github
+```
+pip install git+https://github.com/ndrwpvlv/pyyadisk.git
+```
 
 ## Usage
 
