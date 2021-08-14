@@ -88,7 +88,7 @@ class YandexDisk:
         self.params['path'] = path
         return self
 
-    def restore(self, name: str = None, force_async: bool = None, overwrite: bool = False):
+    def restore(self, name: str = None, force_async: bool = None, overwrite: bool = False, **optional):
         """
         Restore trash items
 
@@ -113,7 +113,7 @@ class YandexDisk:
                   "templated": true
                 }
         """
-        params = {**self.params, 'name': name, 'force_async': force_async, 'overwrite': overwrite, }
+        params = {**self.params, 'name': name, 'force_async': force_async, 'overwrite': overwrite, **optional, }
         return self._put(f'{self.resources}/restore', params=filter_dict_by_key(params))
 
     def operations(self, operation_id: str):
@@ -233,7 +233,7 @@ class YandexDisk:
         self.params.update(params)
         return self
 
-    def get(self, limit: int = None, offset: int = None, **other_params):
+    def get(self, limit: int = None, offset: int = None, **optional):
         """
         Get metadata of file or directory from Disk or Trash mode. For objects sorting use YandexDisk.sort() method
 
@@ -249,10 +249,10 @@ class YandexDisk:
             Tuple with Response code and dictionary from JSON:
             (Response code, JSON Response dict or None for error)
         """
-        params = {**self.params, 'limit': limit, 'offset': offset, **other_params, }
+        params = {**self.params, 'limit': limit, 'offset': offset, **optional, }
         return self._get(self.resources, params=filter_dict_by_key(params))
 
-    def create(self, subdir: str = None):
+    def create(self, subdir: str = None, **optional):
         """
         Make directory or subdirectory by the path
 
@@ -276,10 +276,11 @@ class YandexDisk:
             Tuple with Response code and dictionary from JSON:
             (Response code, JSON Response dict or None for error)
         """
-        params = {**self.params, 'path': f'{self.params["path"]}/{subdir}' if subdir else self.params["path"], }
+        params = {**self.params, 'path': f'{self.params["path"]}/{subdir}' if subdir else self.params["path"],
+                  **optional}
         return self._put(self.resources, params=filter_dict_by_key(params))
 
-    def delete(self, force_async: bool = None, md5_hash: str = None, permanently: bool = False):
+    def delete(self, force_async: bool = None, md5_hash: str = None, permanently: bool = False, **optional):
         """
         Delete file or directory by path from Disk or Trash mode
 
@@ -296,10 +297,10 @@ class YandexDisk:
             Tuple with Response code and dictionary from JSON:
             (Response code, JSON Response dict or None for error)
         """
-        params = {**self.params, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, }
+        params = {**self.params, 'force_async': force_async, 'md5': md5_hash, 'permanently': permanently, **optional, }
         return self._delete(self.resources, params=filter_dict_by_key(params))
 
-    def copy_to(self, destination: str, force_async: bool = None, overwrite: bool = None):
+    def copy_to(self, destination: str, force_async: bool = None, overwrite: bool = None, **optional):
         """
         Copy file or directory to new destination
 
@@ -319,10 +320,10 @@ class YandexDisk:
             (Response code, JSON Response dict or None for error)
         """
         params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
-                  'force_async': force_async, 'overwrite': overwrite, }
+                  'force_async': force_async, 'overwrite': overwrite, **optional, }
         return self._post(f'{self.resources}/copy', params=filter_dict_by_key(params))
 
-    def move_to(self, destination: str, force_async: bool = None, overwrite: bool = None):
+    def move_to(self, destination: str, force_async: bool = None, overwrite: bool = None, **optional):
         """
         Move file or directory to new destination
 
@@ -341,7 +342,7 @@ class YandexDisk:
             (Response code, JSON Response dict or None for error)
         """
         params = {'from': self.params['path'], 'path': destination, 'fields': self.params['fields'],
-                  'force_async': force_async, 'overwrite': overwrite, }
+                  'force_async': force_async, 'overwrite': overwrite, **optional, }
         return self._post(f'{self.resources}/move', params=filter_dict_by_key(params))
 
     def last_uploaded(self, limit: int = None, media_type: str = None, preview_crop: bool = None,
@@ -383,7 +384,7 @@ class YandexDisk:
                   'preview_size': preview_size, }
         return self._get(self.resources, params=filter_dict_by_key(params))
 
-    def link(self):
+    def link(self, **optional):
         """
         Get private link of file or directory which set by YandexDisk.path('path/to/the/file')
 
@@ -392,23 +393,23 @@ class YandexDisk:
             (Response code, JSON Response dict or None for error)
         """
         try:
-            return 200, self._get(f'{self.resources}/download', {'path': self.params.get('path')})[1]['href']
+            return 200, self._get(f'{self.resources}/download', {'path': self.params.get('path'), **optional})[1]['href']
         except TypeError:
             return 404, None
 
-    def share(self):
+    def share(self, **optional):
         """
         Share file or directory which set by YandexDisk.path('path/to/the/file')
 
         Returns:
             tuple(response code, public url) or tuple(404, None) for any errors cases
         """
-        response = self._put(f'{self.resources}/publish', {'path': self.params.get('path')})
+        response = self._put(f'{self.resources}/publish', {'path': self.params.get('path'), **optional, })
         if response[0] == 200:
             return response[0], self.get()[1]["public_url"]
         return 404, None
 
-    def unshare(self):
+    def unshare(self, **optional):
         """
         Unshare public file of directory which set by YandexDisk.path('path/to/the/file')
 
@@ -416,11 +417,11 @@ class YandexDisk:
             tuple(404, None) for any errors cases
         """
         try:
-            return self._put(f'{self.resources}/unpublish', {'path': self.params.get('path')})[1]['href']
+            return self._put(f'{self.resources}/unpublish', {'path': self.params.get('path'), **optional, })[1]['href']
         except TypeError:
             return 404, None
 
-    def public_url(self):
+    def public_url(self, **optional):
         """
         Get public url of public file of directory which set by YandexDisk.path('path/to/the/file')
 
@@ -428,11 +429,12 @@ class YandexDisk:
             tuple(response code, public url)  or tuple(404, None) for any errors cases
         """
         try:
-            return self._get(self.resources, filter_dict_by_key(self.params))[1]['public_url']
+            params = {**self.params, **optional, }
+            return self._get(self.resources, filter_dict_by_key(params))[1]['public_url']
         except KeyError:
             return 404, None
 
-    def public_key(self):
+    def public_key(self, **optional):
         """
         Get public key of public file of directory which set by YandexDisk.path('path/to/the/file')
 
@@ -440,11 +442,12 @@ class YandexDisk:
             tuple(response code, public key) or tuple(404, None) for any errors cases
         """
         try:
-            return self._get(self.resources, filter_dict_by_key(self.params))[1]['public_key']
+            params = {**self.params, **optional, }
+            return self._get(self.resources, filter_dict_by_key(params))[1]['public_key']
         except KeyError:
             return 404, None
 
-    def upload(self, filepath: str, overwrite: bool = False):
+    def upload(self, filepath: str, overwrite: bool = False, **optional):
         """
         File upload method
 
@@ -458,17 +461,17 @@ class YandexDisk:
         filename = Path(filepath).name
         path = f'{self.params["path"]}/{filename}'
         try:
-            link = self._get_upload_link(path=path, overwrite=overwrite)
+            link = self._get_upload_link(path=path, overwrite=overwrite, **optional)
             if link:
                 files = {'file': open(filepath, 'rb')}
-                params = {**self.params, 'path': path}
+                params = {**self.params, 'path': path, **optional}
                 return self._put(link, files=files, params=params)
             else:
                 return 404, None
         except FileNotFoundError as e:
             return 404, str(e)
 
-    def upload_by_url(self, filename: str, url: str, disable_redirects: bool = False):
+    def upload_by_url(self, filename: str, url: str, disable_redirects: bool = False, **optional):
         """
         Upload file from the web by url to the path which set by YandexDisk.path('path/to/the/file')
 
@@ -482,10 +485,10 @@ class YandexDisk:
             (Response code, JSON Response dict or None for error)
         """
         params = {**self.params, 'path': f'{self.params["path"]}/{filename}', 'url': url,
-                  'disable_redirects': disable_redirects}
+                  'disable_redirects': disable_redirects, **optional}
         return self._post(f'{self.resources}/upload', params=filter_dict_by_key(params))
 
-    def _get_upload_link(self, path: str, overwrite: bool = False):
+    def _get_upload_link(self, path: str, overwrite: bool = False, **optional):
         """
         Get upload link for YandexDisk.upload() method
 
@@ -496,7 +499,7 @@ class YandexDisk:
         Returns:
 
         """
-        params = {**self.params, 'path': path, 'overwrite': overwrite, }
+        params = {**self.params, 'path': path, 'overwrite': overwrite, **optional}
         try:
             return self._get(f'{self.resources}/upload', params=filter_dict_by_key(params))[1]['href']
         except (KeyError, TypeError):
